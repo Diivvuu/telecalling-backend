@@ -17,14 +17,20 @@ export const login = async (req: Request, res: Response) => {
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
 
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { id: user._id, role: user.role, leaderId: user.leaderId || null },
       process.env.JWT_SECRET!,
-      { expiresIn: '2h' }
+      { expiresIn: '24h' }
     );
 
     res.json({
       token,
-      user: { id: user._id, email: user.email, role: user.role },
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        leaderId: user.leaderId || null,
+        phone: user.phone,
+      },
     });
   } catch (error) {
     console.error(error);
