@@ -6,6 +6,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
 import serverless from 'serverless-http';
+import swaggerUi from 'swagger-ui-express';
+import swaggerFile from './config/swagger-output.json';
 
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
@@ -46,6 +48,9 @@ app.use('/api/goals', goalRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/calls', callRoutes);
 
+// ✅ Swagger Docs (works on Vercel)
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
+
 /* =============== DATABASE CONNECTION =============== */
 let isConnected = false;
 async function connectDB() {
@@ -83,9 +88,19 @@ async function seedAdmin() {
 
 /* =============== SERVERLESS HANDLER =============== */
 export const handler = async (req: any, res: any) => {
-  await connectDB(); // connect lazily on each cold start
+  await connectDB();
   const expressHandler = serverless(app);
   return expressHandler(req, res);
 };
+
+/* =============== LOCAL DEV MODE =============== */
+if (process.env.NODE_ENV !== 'production') {
+  const port = Number(process.env.PORT) || 5050;
+  connectDB().then(() => {
+    app.listen(port, () =>
+      console.log(`🚀 Local server running at http://localhost:${port}`)
+    );
+  });
+}
 
 export default app;
