@@ -1,19 +1,32 @@
 import { Document, model, Schema } from 'mongoose';
 
+export type CallResult = 'answered' | 'missed' | 'callback' | 'converted';
+
 export interface ICallLog extends Document {
   leadId: Schema.Types.ObjectId;
   telecallerId: Schema.Types.ObjectId;
   duration: number;
-  result: 'answered' | 'missed' | 'callback' | 'converted';
+  result: CallResult;
   remarks?: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const callLogSchema = new Schema<ICallLog>(
   {
-    leadId: { type: Schema.Types.ObjectId, ref: 'Lead', required: true },
-    telecallerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    duration: { type: Number, required: true },
+    leadId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Lead',
+      required: true,
+      index: true,
+    },
+    telecallerId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
+    duration: { type: Number, required: true, min: 0 },
     result: {
       type: String,
       enum: ['answered', 'missed', 'callback', 'converted'],

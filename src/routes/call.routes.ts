@@ -1,13 +1,10 @@
 import { Router } from 'express';
 import { auth } from '../middleware/auth';
-import {
-  listNotifications,
-  markAsRead,
-} from '../controllers/notification.controller';
+import { createCallLog, listCallLogs } from '../controllers/call.controller';
 
 const router = Router();
 
-router.get('/', auth(['admin', 'leader', 'telecaller']), listNotifications);
-router.patch('/:id/read', auth(['admin', 'leader', 'telecaller']), markAsRead);
+router.post('/', auth(['admin', 'leader', 'telecaller']), createCallLog);
+router.get('/', auth(['admin', 'leader', 'telecaller']), listCallLogs);
 
 export default router;

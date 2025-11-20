@@ -6,8 +6,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
 import serverless from 'serverless-http';
-import swaggerUi from 'swagger-ui-express';
-import swaggerFile from './config/swagger-output.json';
+// import swaggerUi from 'swagger-ui-express';
+// import swaggerFile from './config/swagger-output.json';
 
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
@@ -49,7 +49,7 @@ app.use('/api/activity', activityRoutes);
 app.use('/api/calls', callRoutes);
 
 // ✅ Swagger Docs (works on Vercel)
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
+// app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 /* =============== DATABASE CONNECTION =============== */
 let isConnected = false;

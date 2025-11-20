@@ -188,8 +188,8 @@ export const updateLead = async (req: AuthRequest, res: Response) => {
   if (name) lead.name = name;
   if (phone) lead.phone = phone;
 
-  lead.callCount += 1;
-  lead.lastCallAt = new Date();
+  // lead.callCount += 1;
+  // lead.lastCallAt = new Date();
   lead.updatedBy = user.id;
   await lead.save();
 
@@ -397,8 +397,8 @@ export const updateLeadStatus = async (req: AuthRequest, res: Response) => {
   lead.status = status;
   if (notes) lead.notes = notes;
   if (nextCallDate) lead.nextCallDate = new Date(nextCallDate);
-  lead.callCount += 1;
-  lead.lastCallAt = new Date();
+  // lead.callCount += 1;
+  // lead.lastCallAt = new Date();
   lead.updatedBy = user.id;
 
   await lead.save();

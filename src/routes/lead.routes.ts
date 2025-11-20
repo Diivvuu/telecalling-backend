@@ -15,11 +15,11 @@ const r = Router();
 
 r.post('/', auth(['admin', 'leader', 'telecaller']), createLead);
 r.get('/', auth(['admin', 'leader', 'telecaller']), listLeads);
-r.put('/bulk', auth(['admin', 'leader']), bulkUpdateLeads); // 👈 new bulk endpoint
 r.put('/:id', auth(['admin', 'leader', 'telecaller']), updateLead);
 r.get('/:id', auth(['admin', 'leader', 'telecaller']), getLead);
-r.put('/bulk/assign', auth(['admin', 'leader']), bulkAssignLeads);
 r.delete('/:id', auth(['admin', 'leader', 'telecaller']), deleteLead);
+r.put('/bulk', auth(['admin', 'leader']), bulkUpdateLeads); // 👈 new bulk endpoint
+r.put('/bulk/assign', auth(['admin', 'leader']), bulkAssignLeads);
 r.patch(
   '/:id/status',
   auth(['admin', 'leader', 'telecaller']),
