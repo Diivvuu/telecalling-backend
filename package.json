@@ -9,7 +9,7 @@
     "start": "node dist/server.js",
     "lint": "tsc --noEmit",
     "test": "echo \"No tests yet\" && exit 0",
-    "swagger": "node src/config/swagger.js"
+    "swagger": "node src/config/swagger.mjs"
   },
   "keywords": [],
   "author": "",
