@@ -7,7 +7,6 @@ import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
 import serverless from 'serverless-http';
 import swaggerUi from 'swagger-ui-express';
-import swaggerFile from './config/swagger-output.json';
 
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
@@ -21,6 +20,13 @@ import teamRoutes from './routes/team.routes';
 import { User } from './models/Users';
 
 dotenv.config();
+
+let swaggerFile: any = {};
+try {
+  swaggerFile = require('./config/swagger-output.json');
+} catch (e) {
+  swaggerFile = {};
+}
 
 const app = express();
 app.use(helmet());
@@ -102,4 +108,4 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-export default app;
+export default handler;
