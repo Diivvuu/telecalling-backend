@@ -4,6 +4,5 @@
             "runtime": "nodejs22.x"
         }
     },
-    "buildCommand": "npm run build",
-    "outputDirectory": "dist"
+    "buildCommand": "npm run build"
 }
