@@ -7,13 +7,21 @@ import {
   updateLead,
   bulkUpdateLeads,
   bulkAssignLeads,
-  updateLeadStatus, // 👈 add this import
+  updateLeadStatus,
+  uploadLeadsUniversal, // 👈 add this import
 } from '../controllers/lead.controller';
 import { auth } from '../middleware/auth';
+import { upload } from '../config/multer';
 
 const r = Router();
 
-r.post('/', auth(['admin', 'leader', 'telecaller']), createLead);
+r.post(
+  '/upload-csv',
+  auth(['admin']),
+  upload.single('file'),
+  uploadLeadsUniversal
+);
+r.post('/', auth(['admin']), createLead);
 r.get('/', auth(['admin', 'leader', 'telecaller']), listLeads);
 r.put('/:id', auth(['admin', 'leader', 'telecaller']), updateLead);
 r.get('/:id', auth(['admin', 'leader', 'telecaller']), getLead);

@@ -5,6 +5,9 @@ import { User } from '../models/Users';
 import { Types } from 'mongoose';
 import { ActivityLog } from '../models/ActivityLog';
 import { Goal } from '../models/Goal';
+import xlsx from 'xlsx';
+import csvParser from 'csv-parser';
+import { Readable } from 'stream';
 
 export const createLead = async (req: AuthRequest, res: Response) => {
   const user = req.user!;
@@ -287,4 +290,132 @@ export const bulkAssignLeads = async (req: AuthRequest, res: Response) => {
   });
 
   res.json({ success: true, updatedCount: ids.length });
+};
+
+export const uploadLeadsUniversal = async (req: AuthRequest, res: Response) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only admin can upload leads' });
+  }
+
+  if (!req.file) return res.status(400).json({ error: 'File required' });
+
+  const leadsToInsert: any[] = [];
+  const errors: any[] = [];
+
+  let rows: any[] = [];
+
+  try {
+    const fileExt = req.file.originalname.toLowerCase();
+
+    const isExcel =
+      fileExt.endsWith('.xls') ||
+      fileExt.endsWith('.xlsx') ||
+      req.file.mimetype.includes('excel') ||
+      req.file.mimetype.includes('spreadsheet');
+
+    const isCSV =
+      fileExt.endsWith('.csv') ||
+      req.file.mimetype.includes('text') ||
+      req.file.mimetype.includes('csv') ||
+      req.file.mimetype === 'application/octet-stream'; // Mac Numbers sometimes uses this
+    if (isExcel) {
+      const workbook = xlsx.read(req.file.buffer, {
+        type: 'buffer',
+        cellText: false,
+        cellDates: false,
+      });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      rows = xlsx.utils.sheet_to_json(sheet, { defval: '' });
+    } else if (isCSV) {
+      const bufferStream = Readable.from(req.file.buffer).pipe(csvParser());
+      for await (const row of bufferStream) rows.push(row);
+    } else {
+      return res.status(400).json({
+        error:
+          'Unsupported file format. Use CSV or Excel export from any software.',
+        detectedType: req.file.mimetype,
+        originalFile: req.file.originalname,
+      });
+    }
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to read file', detail: e });
+  }
+
+  // Process rows
+  for (const rawRow of rows) {
+    try {
+      // Normalize column names
+      const row: any = {};
+      Object.keys(rawRow).forEach((key) => {
+        if (!key) return;
+        row[
+          key
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '_')
+        ] = rawRow[key];
+      });
+
+      const values = Object.values(rawRow).filter((v) => v !== '');
+
+      const mobile =
+        row.mobile_number ||
+        row.phone ||
+        row.mobile ||
+        row.contact ||
+        (values.length >= 3 ? values[2] : null);
+
+      const name = row.name || values?.[1];
+      const source = row.source || values?.[3] || 'Unknown';
+      const executive_email =
+        row.executive_email || row.executive || values?.[4];
+
+      if (!mobile) throw 'Mobile number missing';
+      if (!executive_email) throw 'Executive email missing';
+
+      // Convert number → string format
+      const formattedMobile = String(mobile).trim();
+      if (!/^\d{6,}$/.test(formattedMobile))
+        throw 'Invalid mobile number format';
+
+      // Check if lead already exists
+      const existing = await Lead.findOne({
+        phone: formattedMobile,
+        active: true,
+      });
+      if (existing) throw 'Lead already exists';
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(executive_email.trim())) {
+        throw `Invalid email format: ${executive_email}`;
+      }
+
+      const assignedUser = await User.findOne({
+        email: executive_email.trim(),
+      });
+      if (!assignedUser) throw `No user found: ${executive_email}`;
+
+      leadsToInsert.push({
+        name: name || 'Unnamed',
+        phone: formattedMobile,
+        source,
+        assignedTo: assignedUser._id,
+        leaderId:
+          assignedUser.role === 'leader'
+            ? assignedUser._id
+            : assignedUser.leaderId,
+        createdBy: req.user.id,
+      });
+    } catch (error) {
+      errors.push({ row: rawRow, error });
+    }
+  }
+
+  if (leadsToInsert.length > 0) await Lead.insertMany(leadsToInsert);
+
+  res.json({
+    success: true,
+    inserted: leadsToInsert.length,
+    failed: errors.length,
+    errors,
+  });
 };

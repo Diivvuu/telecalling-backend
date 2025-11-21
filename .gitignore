@@ -61,3 +61,4 @@ pids/
 
 # Docker / containers (if added later)
 docker-compose.override.yml
+.vercel
