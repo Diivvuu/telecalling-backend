@@ -92,20 +92,34 @@ async function seedAdmin() {
 }
 
 /* =============== SERVERLESS HANDLER =============== */
-export const handler = async (req: any, res: any) => {
-  await connectDB();
-  const expressHandler = serverless(app);
-  return expressHandler(req, res);
-};
-
-/* =============== LOCAL DEV MODE =============== */
+export default app;
+/* =============== LOCAL DEV MODE ONLY =============== */
 if (process.env.NODE_ENV !== 'production') {
   const port = Number(process.env.PORT) || 5050;
+
   connectDB().then(() => {
     app.listen(port, () =>
       console.log(`🚀 Local server running at http://localhost:${port}`)
     );
   });
+} else {
+  // For Vercel (production), ensure DB connects ONCE
+  connectDB();
 }
+// export const handler = async (req: any, res: any) => {
+//   await connectDB();
+//   const expressHandler = serverless(app);
+//   return expressHandler(req, res);
+// };
 
-export default handler;
+// /* =============== LOCAL DEV MODE =============== */
+// if (process.env.NODE_ENV !== 'production') {
+//   const port = Number(process.env.PORT) || 5050;
+//   connectDB().then(() => {
+//     app.listen(port, () =>
+//       console.log(`🚀 Local server running at http://localhost:${port}`)
+//     );
+//   });
+// }
+
+// export default handler;
