@@ -3,30 +3,26 @@ import { AuthRequest } from '../middleware/auth';
 import { Goal, GoalType } from '../models/Goal';
 import { ActivityLog } from '../models/ActivityLog';
 
-/** CREATE goal */
 export const createGoal = async (req: AuthRequest, res: Response) => {
-  const { userId, type, target, startDate, endDate } = req.body as {
+  const { userId, target, startDate, endDate } = req.body as {
     userId?: string;
-    type: GoalType;
     target: number;
     startDate: string;
     endDate: string;
   };
 
-  const period =
-    type === 'daily_calls' || type === 'conversions' ? 'daily' : 'weekly';
-
   const goal = await Goal.create({
     userId: userId || req.user!.id,
-    type,
-    period,
+    type: 'weekly_calls',
+    period: 'weekly',
     target,
+    achieved: 0,
     startDate,
     endDate,
   });
 
   await ActivityLog.create({
-    userId: req.user!.id,
+    userId: req.user.id!,
     action: 'CREATE_GOAL',
     targetId: goal._id,
   });
@@ -34,7 +30,6 @@ export const createGoal = async (req: AuthRequest, res: Response) => {
   res.status(201).json(goal);
 };
 
-/** LIST goals (admin all, others own) */
 export const listGoals = async (req: AuthRequest, res: Response) => {
   const filter: any = {};
   if (req.user!.role !== 'admin') filter.userId = req.user!.id;

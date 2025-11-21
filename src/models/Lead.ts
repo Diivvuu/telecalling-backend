@@ -5,13 +5,13 @@ export interface ILead extends Document {
   phone: string;
   notes?: string;
   status: 'new' | 'in_progress' | 'callback' | 'closed' | 'dead';
-  behaviour?: 'warm' | 'hot' | 'cold'; // NEW optional
+  behaviour?: 'warm' | 'hot' | 'cold';
   assignedTo?: Types.ObjectId | null;
   leaderId?: Types.ObjectId | null;
   createdBy: Types.ObjectId;
   updatedBy?: Types.ObjectId | string;
   nextCallDate?: Date;
-  callCount: number; // used for goal/first-status-change tracking
+  callCount: number;
   lastCallAt?: Date;
   source?: string;
   active: boolean;
@@ -21,32 +21,25 @@ const leadSchema = new Schema<ILead>(
   {
     name: { type: String, required: true },
     phone: { type: String, required: true, trim: true },
-
     notes: String,
-
+    behaviour: {
+      type: String,
+      enum: ['warm', 'hot', 'cold'],
+      default: null,
+    },
     status: {
       type: String,
       enum: ['new', 'in_progress', 'callback', 'closed', 'dead'],
       default: 'new',
       index: true,
     },
-
-    behaviour: {
-      type: String,
-      enum: ['warm', 'hot', 'cold'],
-      default: null, // optional behaviour flag
-    },
-
     assignedTo: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     leaderId: { type: Schema.Types.ObjectId, ref: 'User', default: null },
-
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
-
     callCount: { type: Number, default: 0 },
     lastCallAt: Date,
     nextCallDate: Date,
-
     active: { type: Boolean, default: true },
     source: { type: String, trim: true },
   },

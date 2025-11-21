@@ -5,7 +5,6 @@ export type CallResult = 'answered' | 'missed' | 'callback' | 'converted';
 export interface ICallLog extends Document {
   leadId: Schema.Types.ObjectId;
   telecallerId: Schema.Types.ObjectId;
-  duration: number;
   result: CallResult;
   remarks?: string;
   createdAt: Date;
@@ -26,7 +25,6 @@ const callLogSchema = new Schema<ICallLog>(
       required: true,
       index: true,
     },
-    duration: { type: Number, required: true, min: 0 },
     result: {
       type: String,
       enum: ['answered', 'missed', 'callback', 'converted'],
@@ -34,7 +32,7 @@ const callLogSchema = new Schema<ICallLog>(
     },
     remarks: { type: String },
   },
-  { timestamps: { createdAt: true, updatedAt: true } }
+  { timestamps: true }
 );
 
 export const CallLog = model<ICallLog>('CallLog', callLogSchema);

@@ -1,7 +1,7 @@
 import { Document, model, Schema } from 'mongoose';
 
-export type GoalType = 'daily_calls' | 'weekly_calls' | 'conversions';
-export type GoalPeriod = 'daily' | 'weekly';
+export type GoalType = 'weekly_calls';
+export type GoalPeriod = 'weekly';
 export interface IGoal extends Document {
   userId: Schema.Types.ObjectId;
   type: GoalType;
@@ -24,14 +24,16 @@ const goalSchema = new Schema<IGoal>(
     },
     type: {
       type: String,
-      enum: ['daily_calls', 'weekly_calls', 'conversions'],
+      enum: ['weekly_calls'],
       required: true,
       index: true,
+      default: 'weekly_calls',
     },
     period: {
       type: String,
-      enum: ['daily', 'weekly'],
+      enum: ['weekly'],
       required: true,
+      default: 'weekly',
     },
     target: { type: Number, required: true, min: 1 },
     achieved: { type: Number, default: 0, min: 0 },
